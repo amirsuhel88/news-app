@@ -7,3 +7,11 @@ export const colors = {
   darkGray: '#999999',
   blue: '#0000FF',
 };
+
+export const Tabs = [
+  'Top Stories',
+  'Business',
+  'Politics',
+  'Science',
+  'Technology',
+];
