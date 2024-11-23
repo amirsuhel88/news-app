@@ -12,22 +12,39 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import React from 'react';
 import Logo from './Logo';
 import {colors} from '../constants';
+import {useNavigation} from '@react-navigation/native';
+import {HomeScreenNavigationProp} from '../../type';
 
-const Header = () => {
+interface Props {
+  icon?: boolean;
+}
+const Header = ({icon}: Props) => {
+  const navigation = useNavigation<HomeScreenNavigationProp>();
   return (
     <SafeAreaView>
       <StatusBar />
       <View style={styles.container}>
         {/* navigation */}
-        <TouchableOpacity>
-          <Ionicons name="arrow-back" size={24} color={colors.black} />
-        </TouchableOpacity>
-        <Text>Back</Text>
+        <View style={styles.BackButton}>
+          {icon ? (
+            <TouchableOpacity
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <Ionicons name="arrow-back" size={24} color={colors.black} />
+            </TouchableOpacity>
+          ) : (
+            <Text style={styles.backButtonText}>News</Text>
+          )}
+        </View>
         {/* logo */}
         <Logo />
         {/* Sign IN */}
-        <TouchableOpacity style={styles.signInView}>
-          <Text style={styles.signInText}>Sign In</Text>
+        <TouchableOpacity
+          style={styles.signInView}
+          onPress={() => navigation.navigate('SignIn')}>
+          <Ionicons name="person" size={24} color={colors.black} />
+
           {/* icon */}
         </TouchableOpacity>
       </View>

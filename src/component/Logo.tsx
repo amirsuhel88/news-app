@@ -1,12 +1,15 @@
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import React from 'react';
 import {colors} from '../constants';
+import {useNavigation} from '@react-navigation/native';
+import {HomeScreenNavigationProp} from '../../type';
 
 export default function Logo() {
+  const navigation = useNavigation<HomeScreenNavigationProp>();
   return (
     <TouchableOpacity
       style={styles.logoContainer}
-      onPress={() => console.log('logo clicked')}>
+      onPress={() => navigation.navigate('Home')}>
       <View style={styles.logoView}>
         <Text style={styles.logoText}>A</Text>
       </View>
