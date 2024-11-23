@@ -1,24 +1,93 @@
 import {
+  ActivityIndicator,
   FlatList,
+  Image,
   StyleSheet,
   Text,
   Touchable,
   TouchableOpacity,
   View,
 } from 'react-native';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import Header from '../component/Header';
 import {colors, Tabs} from '../constants';
+import {useNavigation} from '@react-navigation/native';
+import {HomeScreenNavigationProp, NewsData} from '../../type';
+import {NEWS_API_KEY} from '../../config';
+import Loader from '../component/Loader';
+
+type Tab = (typeof Tabs)[number];
+const CATEGORY_MAP: Record<Tab, string> = {
+  'Top Stories': 'general',
+  Business: 'business',
+  Politics: 'politics',
+  Science: 'science',
+  Technology: 'technology',
+};
 
 const Home = () => {
   const [selectedTab, setSelectedTab] = React.useState(Tabs[0]);
+  const [loading, setLoading] = useState(false);
+  const [news, setNews] = useState<NewsData[]>([]);
+  const [page, setPage] = useState(1);
+  // const [perPage] = useState(10);
+  const navigation = useNavigation<HomeScreenNavigationProp>();
+  const perPage = 20;
+  useEffect(() => {
+    getData(1);
+  }, [selectedTab]);
+  const getData = async (page: number) => {
+    try {
+      setLoading(true);
+      const category = CATEGORY_MAP[selectedTab];
+      const response = await fetch(
+        `https://newsapi.org/v2/top-headlines?category=${category}&apiKey=${NEWS_API_KEY}&page=${page}&pageSize=${perPage}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'GET',
+        },
+      );
+      const data = await response.json();
+      if (data?.status === 'ok') {
+        setNews(prevNews =>
+          page === 1 ? data?.articles : [...prevNews, ...data?.articles],
+        );
+      }
+      console.log('news data: ', data);
+    } catch (error) {
+      console.log('Error fetching data', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // tab items
   const renderTabItem = ({item}: {item: string}) => (
     <TouchableOpacity style={styles.tab} onPress={() => setSelectedTab(item)}>
       <Text
         style={[styles.tabTexT, item === selectedTab && styles.tabTextActive]}>
         {item}
       </Text>
+    </TouchableOpacity>
+  );
+  const renderNewsCard = ({item}: {item: NewsData}) => (
+    <TouchableOpacity style={styles.card}>
+      {item?.urlToImage && (
+        <Image
+          source={{uri: item?.urlToImage}}
+          resizeMode="cover"
+          style={styles.image}
+        />
+      )}
+      <View style={styles.cardContent}>
+        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.description}>{item.description}</Text>
+        <Text style={styles.publishedAt}>
+          Published at: {new Date(item.publishedAt).toLocaleString()}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
   return (
@@ -36,6 +105,23 @@ const Home = () => {
         />
         {/* news view */}
       </View>
+      {loading ? (
+        <Loader />
+      ) : (
+        <FlatList
+          data={news}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={renderNewsCard}
+          contentContainerStyle={styles.list}
+          // ListFooterComponent={
+          //   <ActivityIndicator
+          //     size="large"
+          //     color={colors.gray}
+          //     style={styles.indicatorStyle}
+          //   />
+          // }
+        />
+      )}
     </View>
   );
 };
@@ -74,6 +160,7 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 8,
     overflow: 'hidden',
+    borderWidth: 1,
     borderColor: colors.lightBlack,
     marginBottom: 15,
   },
@@ -96,5 +183,10 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     letterSpacing: 1,
+  },
+  description: {
+    fontSize: 14,
+    color: colors.gray,
+    marginBottom: 8,
   },
 });
