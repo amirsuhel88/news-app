@@ -35,7 +35,16 @@ const Home = () => {
   const perPage = 20;
   useEffect(() => {
     getData(1);
-  }, [selectedTab]);
+    if (page > 1) {
+      getData(page);
+    } else {
+      getData(1);
+    }
+  }, [selectedTab, page]);
+
+  const handleLoadMore = () => {
+    setPage(prevPage => prevPage + 1);
+  };
   const getData = async (page: number) => {
     try {
       setLoading(true);
@@ -55,7 +64,6 @@ const Home = () => {
           page === 1 ? data?.articles : [...prevNews, ...data?.articles],
         );
       }
-      console.log('news data: ', data);
     } catch (error) {
       console.log('Error fetching data', error);
     } finally {
@@ -73,7 +81,9 @@ const Home = () => {
     </TouchableOpacity>
   );
   const renderNewsCard = ({item}: {item: NewsData}) => (
-    <TouchableOpacity style={styles.card}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => navigation.navigate('News', {item})}>
       {item?.urlToImage && (
         <Image
           source={{uri: item?.urlToImage}}
@@ -105,7 +115,7 @@ const Home = () => {
         />
         {/* news view */}
       </View>
-      {loading ? (
+      {loading && page === 1 ? (
         <Loader />
       ) : (
         <FlatList
@@ -113,13 +123,15 @@ const Home = () => {
           keyExtractor={(item, index) => index.toString()}
           renderItem={renderNewsCard}
           contentContainerStyle={styles.list}
-          // ListFooterComponent={
-          //   <ActivityIndicator
-          //     size="large"
-          //     color={colors.gray}
-          //     style={styles.indicatorStyle}
-          //   />
-          // }
+          onEndReachedThreshold={0.5}
+          onEndReached={handleLoadMore}
+          ListFooterComponent={
+            <ActivityIndicator
+              size="large"
+              color={colors.gray}
+              style={styles.indicatorStyle}
+            />
+          }
         />
       )}
     </View>
