@@ -7,13 +7,54 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React from 'react';
-import Header from '../component/Header';
+import React, {useState} from 'react';
 import {colors} from '../constants';
 import Logo from '../component/Logo';
+import {useDispatch} from 'react-redux';
+import axios from 'axios';
+import {loginFailure, loginSuccess} from '../store/slices/authSlice';
+import {HomeScreenNavigationProp, RootStackParamList} from '../../type';
 const {width} = Dimensions.get('window');
-
+import {useNavigation} from '@react-navigation/native';
 const SingIn = () => {
+  const navigation = useNavigation<HomeScreenNavigationProp>();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
+
+  const handleLogin = async () => {
+    setLoading(true);
+
+    try {
+      const response = await axios.post(
+        'http://192.168.182.150:5000/api/login',
+        {
+          email,
+          password,
+        },
+      );
+      const {data} = response.data;
+
+      // Dispatch login success action
+
+      dispatch(
+        loginSuccess({
+          user: data.user,
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+          isAuthenticated: false,
+          error: null,
+        }),
+      );
+      setLoading(false);
+      navigation.navigate('Home');
+    } catch (err: any) {
+      // Handle login error
+      dispatch(loginFailure(err.response?.data?.message || 'Login failed'));
+      setLoading(false);
+    }
+  };
   return (
     <View style={styles.container}>
       <View style={styles.contentView}>
@@ -21,17 +62,21 @@ const SingIn = () => {
         <Text style={styles.singInText}>Sign In</Text>
         <View style={styles.inputView}>
           <TextInput
-            placeholder="Email or useranme"
+            placeholder="Email"
             placeholderTextColor={colors.darkGray}
             style={styles.inputSyle}
+            value={email}
+            onChangeText={setEmail}
           />
           <TextInput
             placeholder="Password"
             placeholderTextColor={colors.darkGray}
             style={styles.inputSyle}
             secureTextEntry
+            value={password}
+            onChangeText={setPassword}
           />
-          <TouchableOpacity style={styles.buttonView}>
+          <TouchableOpacity style={styles.buttonView} onPress={handleLogin}>
             <Text style={styles.buttonText}>Sign In</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.helpView}>

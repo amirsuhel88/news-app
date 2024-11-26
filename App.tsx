@@ -4,6 +4,8 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import News from './src/screens/News';
 import SingIn from './src/screens/SingIn';
 import {NavigationContainer} from '@react-navigation/native';
+import {Provider} from 'react-redux';
+import {store} from './src/store/store';
 
 const Stack = createNativeStackNavigator();
 
@@ -21,9 +23,11 @@ const RootStack = () => {
 
 function App(): React.JSX.Element {
   return (
-    <NavigationContainer>
-      <RootStack />
-    </NavigationContainer>
+    <Provider store={store}>
+      <NavigationContainer>
+        <RootStack />
+      </NavigationContainer>
+    </Provider>
   );
 }
 
