@@ -16,6 +16,7 @@ import {loginFailure, loginSuccess} from '../store/slices/authSlice';
 import {HomeScreenNavigationProp, RootStackParamList} from '../../type';
 const {width} = Dimensions.get('window');
 import {useNavigation} from '@react-navigation/native';
+import {baseUrl} from '../../baseUrl';
 const SingIn = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const [email, setEmail] = useState('');
@@ -27,13 +28,10 @@ const SingIn = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        'http://192.168.182.150:5000/api/login',
-        {
-          email,
-          password,
-        },
-      );
+      const response = await axios.post(`${baseUrl}/login`, {
+        email,
+        password,
+      });
       const {data} = response.data;
 
       // Dispatch login success action
